@@ -1,0 +1,3179 @@
+// Muse application database — Prisma schema format
+// Generated 2026-09-25 from the muse.db schema reference.
+// Read-only query surface: credentials, catalogs, migration/backup tables,
+// Sentinel approvals, per-artifact DBs, and private model reasoning are excluded.
+// Custom enum types map to String; fill values from the live DB if needed.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  schemas  = ["activity", "agent", "device", "feed", "goals", "health", "ideas", "ingest", "media", "memory", "messages", "podcasts", "runtime", "scheduler", "self_improvement", "shell", "spaces"]
+}
+
+model activity_activity_monitor_agent_threads {
+  agent_id           String                       @id
+  activity_thread_id String
+  created_at         String
+  updated_at         String
+  @@schema("activity")
+  @@map("activity_monitor_agent_threads")
+}
+
+model activity_activity_monitor_carrier_user_messages {
+  link_seq           BigInt                       @id
+  carrier_message_id String
+  user_message_id    String
+  root_agent_id      String?
+  created_at         DateTime
+  @@schema("activity")
+  @@map("activity_monitor_carrier_user_messages")
+}
+
+model activity_activity_monitor_message_threads {
+  message_id         String                       @id
+  activity_thread_id String
+  created_at         String
+  updated_at         String
+  @@schema("activity")
+  @@map("activity_monitor_message_threads")
+}
+
+model activity_activity_monitor_runtime_work_threads {
+  work_id            String                       @id
+  activity_thread_id String
+  created_at         String
+  updated_at         String
+  activity_activity_monitor_threads activity_activity_monitor_threads  @relation(fields: [activity_thread_id], references: [activity_thread_id])
+  @@schema("activity")
+  @@map("activity_monitor_runtime_work_threads")
+}
+
+model activity_activity_monitor_thread_actions {
+  action_seq         BigInt
+  action_id          String                       @id
+  activity_thread_id String
+  action_index       BigInt
+  agent_id           String?
+  agent_depth        Int?
+  icon               String
+  title              String
+  subtitle           String?
+  report             String
+  status             String
+  created_at         String
+  section_key        String?
+  section_title      String?
+  section_order      Int?
+  section_depth      Int?
+  parent_section_key String?
+  ordinal_label      String?
+  @@schema("activity")
+  @@map("activity_monitor_thread_actions")
+}
+
+model activity_activity_monitor_thread_sections {
+  activity_thread_id String
+  section_key        String
+  title              String
+  status             String
+  section_order      Int?
+  section_depth      Int?
+  parent_section_key String?
+  ordinal_label      String?
+  created_at         String
+  updated_at         String
+  @@id([activity_thread_id, section_key])
+  activity_activity_monitor_threads activity_activity_monitor_threads  @relation(fields: [activity_thread_id], references: [activity_thread_id])
+  @@schema("activity")
+  @@map("activity_monitor_thread_sections")
+}
+
+model activity_activity_monitor_threads {
+  activity_thread_id          String                       @id
+  name                        String
+  subtitle                    String
+  status_title                String?
+  icon                        String
+  emoji                       String?
+  activity_thread_kind        String?
+  space_slug                  String?
+  expected_finish_description String?
+  status                      String
+  finish_status               String?
+  finish_status_reason        String?
+  created_at                  String
+  finished_at                 String?
+  finish_message              String?
+  artifact_slug               String?
+  activity_activity_monitor_runtime_work_threads activity_activity_monitor_runtime_work_threads[]
+  activity_activity_monitor_thread_sections activity_activity_monitor_thread_sections[]
+  @@schema("activity")
+  @@map("activity_monitor_threads")
+}
+
+model activity_feed_entries {
+  activity_key   String                       @id
+  activity_type  String
+  is_goal        Boolean
+  message_id     String?
+  title          String?
+  status_title   String?
+  subtitle       String?
+  details_json   String?
+  status         String
+  task_label     String?
+  created_at_ms  BigInt
+  updated_at_ms  BigInt
+  finished_at_ms BigInt?
+  created_at     DateTime?
+  updated_at     DateTime?
+  finished_at    DateTime?
+  @@schema("activity")
+  @@map("feed_entries")
+}
+
+model agent_agent_ancestors {
+  descendant_id String
+  ancestor_id   String
+  distance      Int
+  @@id([descendant_id, ancestor_id])
+  @@schema("agent")
+  @@map("agent_ancestors")
+}
+
+model agent_agent_compactions {
+  id                      BigInt                       @id
+  agent_id                String
+  summary                 String
+  first_kept_seq          BigInt?
+  checkpoint_seq          BigInt?
+  tokens_before           BigInt?
+  tokens_after            BigInt?
+  trigger                 String
+  will_retry              Boolean
+  created_at              BigInt
+  has_replacement_history Boolean
+  @@schema("agent")
+  @@map("agent_compactions")
+}
+
+model agent_agent_message_token_usage {
+  agent_id      String
+  message_id    String
+  input_tokens  BigInt
+  output_tokens BigInt
+  created_at    BigInt
+  @@id([agent_id, message_id])
+  @@schema("agent")
+  @@map("agent_message_token_usage")
+}
+
+model agent_agents {
+  agent_id                          String                       @id
+  id                                String?
+  session_id                        String?
+  kind                              String
+  parent_id                         String?
+  parent_agent_id                   String?
+  root_session_id                   String?
+  request_id                        String?
+  model                             String
+  status                            String
+  depth                             Int
+  created_at                        BigInt
+  updated_at                        BigInt
+  last_assistant_message            String?
+  seen_at_ms                        BigInt?
+  prompt_floor_seq                  BigInt?
+  ephemeral                         Boolean
+  last_assistant_resources          String?
+  agent_type                        String?
+  presentation_root_session_id      String?
+  spawn_metadata_json               String?
+  originating_location_context_json String?
+  runtime_requests                  runtime_requests?  @relation(fields: [request_id], references: [request_id])
+  agent_message_mailbox             agent_message_mailbox[]
+  agent_session_memory_capture_deadlines agent_session_memory_capture_deadlines[]
+  @@schema("agent")
+  @@map("agents")
+}
+
+model agent_chat_preferences {
+  id                        Int                          @id
+  active_root_id            String
+  verbose                   BigInt
+  usage_mode                String
+  active_root_cleared_at_ms BigInt?
+  @@schema("agent")
+  @@map("chat_preferences")
+}
+
+model agent_compactions {
+  compaction_id                 BigInt                       @id
+  agent_id                      String
+  checkpoint_context_item_id    BigInt?
+  replacement_history_first_seq Int?
+  replacement_history_last_seq  Int?
+  created_at                    DateTime
+  summary_text                  String
+  agent_context_items           agent_context_items?  @relation(fields: [checkpoint_context_item_id], references: [context_item_id])
+  @@schema("agent")
+  @@map("compactions")
+}
+
+model agent_context_item_derived_write_backlog {
+  context_item_id BigInt                       @id
+  attempts        Int
+  last_error      String?
+  created_at      DateTime
+  updated_at      DateTime
+  deadlettered_at DateTime?
+  agent_context_items agent_context_items  @relation(fields: [context_item_id], references: [context_item_id])
+  @@schema("agent")
+  @@map("context_item_derived_write_backlog")
+}
+
+model agent_context_item_fields {
+  context_item_field_id BigInt                       @id
+  context_item_id       BigInt
+  field_path            String
+  scalar_type           String
+  scalar_value          String?
+  field_text_content    String?
+  agent_context_items   agent_context_items  @relation(fields: [context_item_id], references: [context_item_id])
+  @@schema("agent")
+  @@map("context_item_fields")
+}
+
+model agent_context_item_resume_projection {
+  agent_id                 String
+  seq                      BigInt
+  context_item_id          BigInt?
+  created_at               BigInt?
+  message_source           String?
+  client_context_json      String?
+  reply_prefix             String?
+  provenance_json          String?
+  client_context_projected Boolean
+  reply_prefix_projected   Boolean
+  provenance_projected     Boolean
+  updated_at               DateTime
+  @@id([agent_id, seq])
+  agent_context_items      agent_context_items?  @relation(fields: [context_item_id], references: [context_item_id])
+  @@schema("agent")
+  @@map("context_item_resume_projection")
+}
+
+model agent_context_items {
+  context_item_id         BigInt                       @id
+  agent_id                String
+  seq                     BigInt
+  item_kind               String  // custom enum agent.context_item_kind; values not in reference
+  message_id              String?
+  tool_call_id            BigInt?
+  tool_output_id          BigInt?
+  role                    String?  // custom enum runtime.message_role; values not in reference
+  call_id                 String?
+  tool_name               String?
+  success                 Boolean?
+  message_source          String?
+  created_at              DateTime
+  data_fbids              BigInt[]?
+  data_message_ids        String[]?
+  data_cleanup_checked_at DateTime?
+  data_summarized_at      DateTime?
+  data_thread_ids         String[]?
+  data_expires_at         DateTime?
+  text_content            String?
+  item_json               String?
+  runtime_messages        runtime_messages?  @relation(fields: [message_id], references: [message_id])
+  runtime_tool_calls      runtime_tool_calls?  @relation(fields: [tool_call_id], references: [tool_call_id])
+  runtime_tool_outputs    runtime_tool_outputs?  @relation(fields: [tool_output_id], references: [tool_output_id])
+  agent_compactions       agent_compactions[]
+  agent_context_item_derived_write_backlog agent_context_item_derived_write_backlog[]
+  agent_context_item_fields agent_context_item_fields[]
+  agent_context_item_resume_projection agent_context_item_resume_projection[]
+  agent_context_text_segments agent_context_text_segments[]
+  @@schema("agent")
+  @@map("context_items")
+}
+
+model agent_context_text_segments {
+  context_text_segment_id BigInt                       @id
+  context_item_id         BigInt
+  ordinal                 Int
+  text_content            String
+  agent_context_items     agent_context_items  @relation(fields: [context_item_id], references: [context_item_id])
+  @@schema("agent")
+  @@map("context_text_segments")
+}
+
+model agent_message_mailbox {
+  submission_id           String                       @id
+  accepted_ordinal        BigInt
+  agent_id                String
+  conversation_epoch      BigInt
+  submission_kind         String
+  routing_scope           String
+  state                   String
+  stream_owner_message_id String?
+  submission_json         String
+  transcript_event_seq    BigInt?
+  accepted_at             DateTime
+  attached_at             DateTime?
+  terminalized_at         DateTime?
+  checkpoint_custody      String?
+  agent_agents            agent_agents  @relation(fields: [agent_id], references: [agent_id])
+  runtime_events          runtime_events?  @relation(fields: [transcript_event_seq], references: [event_seq])
+  @@schema("agent")
+  @@map("message_mailbox")
+}
+
+model agent_recovery_owner_terminal_events {
+  recovery_class String
+  owner_id       String
+  generation     BigInt
+  event_type     String
+  claimed_at     DateTime
+  @@id([recovery_class, owner_id, generation, event_type])
+  @@schema("agent")
+  @@map("recovery_owner_terminal_events")
+}
+
+model agent_recovery_owners {
+  recovery_class  String
+  owner_id        String
+  generation      BigInt
+  agent_id        String
+  message_id      String
+  active_at       DateTime
+  terminal_at     DateTime?
+  terminal_status String?
+  @@id([recovery_class, owner_id])
+  @@schema("agent")
+  @@map("recovery_owners")
+}
+
+model agent_runtime_restart_checkpoints {
+  agent_id              String                       @id
+  mode                  String
+  payload_json          String?
+  created_at            BigInt
+  updated_at            BigInt
+  recovery_class        String?
+  recovery_owner_id     String?
+  execution_config_json String?
+  @@schema("agent")
+  @@map("runtime_restart_checkpoints")
+}
+
+model agent_runtime_state {
+  agent_id            String                       @id
+  current_context_seq Int
+  last_event_seq      BigInt?
+  updated_at          DateTime
+  runtime_events      runtime_events?  @relation(fields: [last_event_seq], references: [event_seq])
+  @@schema("agent")
+  @@map("runtime_state")
+}
+
+model agent_session_memory_capture_deadlines {
+  root_session_id String                       @id
+  session_id      String?
+  reason          String
+  due_at_ms       BigInt
+  created_at_ms   BigInt
+  updated_at_ms   BigInt
+  agent_agents    agent_agents  @relation(fields: [root_session_id], references: [agent_id])
+  @@schema("agent")
+  @@map("session_memory_capture_deadlines")
+}
+
+model agent_session_metadata {
+  session_id                    String                       @id
+  origin                        String
+  lifecycle                     String
+  status                        String
+  thread_title                  String?
+  source_session_id             String?
+  source_prompt_seq_upper_bound BigInt?
+  source_message_id_boundary    String?
+  created_at                    BigInt
+  updated_at                    BigInt
+  pinned                        Boolean
+  channel                       String?
+  channel_conversation_id       String?
+  channel_delivery_target       String?
+  pinned_order                  BigInt?
+  @@schema("agent")
+  @@map("session_metadata")
+}
+
+model agent_sessions {
+  session_id      String                       @id
+  root_request_id String?
+  created_at      DateTime
+  updated_at      DateTime
+  archived_at     DateTime?
+  runtime_requests runtime_requests?  @relation(fields: [root_request_id], references: [request_id])
+  @@schema("agent")
+  @@map("sessions")
+}
+
+model agent_subagent_monitor_decisions {
+  decision_id          BigInt                       @id
+  coordinator_agent_id String
+  child_agent_id       String
+  parent_agent_id      String
+  parent_message_id    String
+  monitor_event_id     BigInt
+  monitor_event_kind   String
+  inference_request_id String
+  assistant_text       String?
+  tool_call_id         String?
+  tool_name            String?
+  tool_arguments       String?
+  tool_result_json     String
+  decision_kind        String
+  created_at           BigInt
+  @@schema("agent")
+  @@map("subagent_monitor_decisions")
+}
+
+model agent_subagent_progress {
+  progress_id    BigInt                       @id
+  child_agent_id String
+  event_seq      BigInt?
+  status         String
+  created_at     DateTime
+  progress_text  String?
+  runtime_events runtime_events?  @relation(fields: [event_seq], references: [event_seq])
+  @@schema("agent")
+  @@map("subagent_progress")
+}
+
+model agent_subagent_progress_message_events {
+  event_id          BigInt                       @id
+  child_agent_id    String
+  parent_agent_id   String
+  parent_message_id String
+  message_text      String
+  created_at        BigInt
+  delivered_at      BigInt?
+  @@schema("agent")
+  @@map("subagent_progress_message_events")
+}
+
+model agent_subagent_progress_tool_events {
+  event_id            BigInt                       @id
+  child_agent_id      String
+  parent_agent_id     String
+  parent_message_id   String
+  tool_name           String
+  tool_description    String
+  tool_status         String
+  tool_result_preview String?
+  created_at          BigInt
+  delivered_at        BigInt?
+  run_id              String?
+  @@schema("agent")
+  @@map("subagent_progress_tool_events")
+}
+
+model agent_subagent_spawns {
+  spawn_id                       BigInt                       @id
+  parent_agent_id                String
+  child_agent_id                 String
+  parent_message_id              String?
+  parent_request_id              String?
+  root_request_id                String?
+  root_message_execution_id      String?
+  request_id                     String?
+  created_at                     BigInt
+  status                         String?
+  deferred_terminal_status       String?
+  final_response                 String?
+  completed_at                   BigInt?
+  prompt                         String?
+  requester_source               String?
+  requester_channel_context_json String?
+  seen_at                        BigInt?
+  child_depth                    Int
+  agent_type                     String?
+  metadata_json                  String?
+  spawn_call_id                  String?
+  runtime_requests               runtime_requests?  @relation(fields: [request_id], references: [request_id])
+  @@schema("agent")
+  @@map("subagent_spawns")
+}
+
+model agent_token_usage {
+  token_usage_id      BigInt                       @id
+  agent_id            String
+  request_id          String?
+  input_tokens        Int
+  output_tokens       Int
+  cached_input_tokens Int
+  reasoning_tokens    Int
+  created_at          DateTime
+  runtime_requests    runtime_requests?  @relation(fields: [request_id], references: [request_id])
+  @@schema("agent")
+  @@map("token_usage")
+}
+
+model agent_volatile_context_pins {
+  agent_id         String
+  variant_hash     String
+  variant_json     String
+  prompt_floor_seq BigInt
+  checkpoint_seq   BigInt
+  body             String?
+  created_at       DateTime
+  @@id([agent_id, variant_hash])
+  @@schema("agent")
+  @@map("volatile_context_pins")
+}
+
+model device_calendar_events {
+  node_id              String
+  external_event_id    String
+  title                String
+  start_at             DateTime
+  end_at               DateTime
+  is_all_day           Boolean
+  external_calendar_id String
+  calendar_name        String
+  availability         String
+  location             String?
+  notes                String?
+  time_zone            String?
+  start_local_date     DateTime?
+  end_local_date       DateTime?
+  is_recurring         Boolean
+  url                  String?
+  event_status         String
+  calendar_color       String?
+  @@id([node_id, external_event_id])
+  device_nodes         device_nodes  @relation(fields: [node_id], references: [node_id])
+  @@schema("device")
+  @@map("calendar_events")
+}
+
+model device_call_log {
+  call_log_id         BigInt                       @id
+  producer_id         String
+  external_id         String
+  phone_number        String?
+  contact_name        String?
+  call_type           String?
+  occurred_at_unix_ms BigInt?
+  duration_seconds    BigInt?
+  platform            String?
+  created_at          DateTime
+  @@schema("device")
+  @@map("call_log")
+}
+
+model device_client_contexts {
+  connection_id     String                       @id
+  device_id         String
+  session_id        String?
+  root_session_id   String?
+  platform          String?
+  view              String?
+  mode              String?
+  is_visible        Boolean?
+  presence_status   String
+  metadata_json     Json?
+  connected_at_ms   BigInt
+  last_active_at_ms BigInt
+  updated_at_ms     BigInt
+  created_at        DateTime
+  @@schema("device")
+  @@map("client_contexts")
+}
+
+model device_contact_addresses {
+  contact_address_id BigInt                       @id
+  contact_id         BigInt
+  label              String?
+  street             String?
+  city               String?
+  state              String?
+  postal_code        String?
+  country            String?
+  device_contacts    device_contacts  @relation(fields: [contact_id], references: [contact_id])
+  @@schema("device")
+  @@map("contact_addresses")
+}
+
+model device_contact_emails {
+  contact_email_id BigInt                       @id
+  contact_id       BigInt
+  label            String?
+  email            String
+  device_contacts  device_contacts  @relation(fields: [contact_id], references: [contact_id])
+  @@schema("device")
+  @@map("contact_emails")
+}
+
+model device_contact_phones {
+  contact_phone_id BigInt                       @id
+  contact_id       BigInt
+  label            String?
+  phone_e164       String?
+  phone_raw        String
+  device_contacts  device_contacts  @relation(fields: [contact_id], references: [contact_id])
+  @@schema("device")
+  @@map("contact_phones")
+}
+
+model device_contacts {
+  contact_id          BigInt                       @id
+  node_id             String
+  platform            String
+  external_contact_id String
+  display_name        String?
+  given_name          String?
+  family_name         String?
+  organization        String?
+  job_title           String?
+  birthday_text       String?
+  note                String?
+  synced_at_text      String
+  deleted_at          DateTime?
+  updated_at          DateTime
+  thumbnail           String?
+  device_nodes        device_nodes  @relation(fields: [node_id], references: [node_id])
+  device_contact_addresses device_contact_addresses[]
+  device_contact_emails device_contact_emails[]
+  device_contact_phones device_contact_phones[]
+  @@schema("device")
+  @@map("contacts")
+}
+
+model device_data_sync_state {
+  node_id                                         String
+  data_source                                     String
+  next_full_sync_at                               DateTime?
+  current_full_sync_id                            String?
+  current_full_sync_expires_at                    DateTime?
+  current_full_sync_range_start                   DateTime?
+  current_full_sync_range_end                     DateTime?
+  changed_during_full_sync                        Boolean
+  last_full_sync_at                               DateTime?
+  last_full_sync_range_start                      DateTime?
+  last_full_sync_range_end                        DateTime?
+  search_trigger_pending                          Boolean
+  current_full_sync_requester_root_session_id     String?
+  current_full_sync_requester_presentation_locale String?
+  @@id([node_id, data_source])
+  device_nodes                                    device_nodes  @relation(fields: [node_id], references: [node_id])
+  @@schema("device")
+  @@map("data_sync_state")
+}
+
+model device_media_upload_batches {
+  lane                       String                       @id
+  batch_id                   String
+  high_water_global_seq      BigInt
+  pending_count              BigInt
+  oldest_received_at_unix_ms BigInt
+  claimed_at                 DateTime
+  @@schema("device")
+  @@map("media_upload_batches")
+}
+
+model device_media_upload_events {
+  media_upload_event_id BigInt                       @id
+  global_seq            BigInt
+  event_id              String
+  media_id              String
+  node_id               String?
+  lane                  String
+  received_at_text      String
+  received_at_unix_ms   BigInt
+  received_at           DateTime
+  status                String
+  processed_at_text     String?
+  processed_at_unix_ms  BigInt?
+  processed_at          DateTime?
+  handoff_message_id    String?
+  summary_preview       String?
+  failure_code          String?
+  failure_message       String?
+  device_nodes          device_nodes?  @relation(fields: [node_id], references: [node_id])
+  @@schema("device")
+  @@map("media_upload_events")
+}
+
+model device_nodes {
+  node_id                   String                       @id
+  node_kind                 String
+  display_name              String?
+  platform                  String
+  enabled_permissions_json  String
+  commands_json             String
+  version                   String?
+  device_family             String?
+  model_id                  String?
+  is_wakeup_supported       Boolean?
+  delivery_app              String?
+  paired_at_text            String?
+  created_at                DateTime
+  last_seen_at_text         String?
+  last_seen_at              DateTime?
+  status                    String
+  revoked                   Boolean
+  contacts_last_synced_at   String?
+  contacts_last_received_at String?
+  contacts_last_sync_status String
+  contacts_last_sync_error  String?
+  contacts_contact_count    BigInt
+  health_last_received_at   String?
+  health_last_sync_status   String
+  health_last_sync_error    String?
+  data_sources_json         String
+  invoke_protocol           String
+  pairing_status            String
+  contacts_content_sha256   String?
+  metadata_json             String
+  location_sharing_mode     String?
+  device_calendar_events    device_calendar_events[]
+  device_contacts           device_contacts[]
+  device_data_sync_state    device_data_sync_state[]
+  device_media_upload_events device_media_upload_events[]
+  @@schema("device")
+  @@map("nodes")
+}
+
+model device_upload_chunks {
+  upload_session_id String
+  chunk_index       Int
+  payload_digest    String
+  created_at_text   String
+  created_at        DateTime
+  payload           String
+  @@id([upload_session_id, chunk_index])
+  device_upload_sessions device_upload_sessions  @relation(fields: [upload_session_id], references: [upload_session_id])
+  @@schema("device")
+  @@map("upload_chunks")
+}
+
+model device_upload_sessions {
+  upload_session_id String                       @id
+  node_id           String
+  route_kind        String
+  request_id        String?
+  datatype          String
+  sync_mode         String?
+  chunk_count       Int
+  status            String
+  created_at_text   String
+  updated_at_text   String
+  expires_at_text   String
+  expires_at        DateTime
+  created_at        DateTime
+  response          String?
+  device_upload_chunks device_upload_chunks[]
+  @@schema("device")
+  @@map("upload_sessions")
+}
+
+model feed_fleet_engagement_contributions {
+  contribution_id    String                       @id
+  origin_id          String
+  engagement_version BigInt
+  created_at_ms      BigInt
+  updated_at_ms      BigInt
+  @@schema("feed")
+  @@map("fleet_engagement_contributions")
+}
+
+model feed_fleet_engagement_outbox {
+  contribution_id    String                       @id
+  origin_id          String
+  deleted_count      BigInt
+  discuss_count      BigInt
+  share_count        BigInt
+  seed_use_count     BigInt
+  mutation_version   BigInt
+  attempt_count      Int
+  next_attempt_at_ms BigInt
+  created_at_ms      BigInt
+  updated_at_ms      BigInt
+  @@schema("feed")
+  @@map("fleet_engagement_outbox")
+}
+
+model feed_fleet_fetch_receipts {
+  payload_hash        String                       @id
+  first_fetched_at_ms BigInt
+  origin_id           String?
+  @@schema("feed")
+  @@map("fleet_fetch_receipts")
+}
+
+model feed_fleet_publish_state {
+  singleton              Boolean                      @id
+  published_watermark_ms BigInt
+  @@schema("feed")
+  @@map("fleet_publish_state")
+}
+
+model feed_fleet_reaction_outbox {
+  unit_id            String                       @id
+  origin_id          String
+  liked              Boolean
+  mutation_version   BigInt
+  attempt_count      Int
+  next_attempt_at_ms BigInt
+  created_at_ms      BigInt
+  updated_at_ms      BigInt
+  @@schema("feed")
+  @@map("fleet_reaction_outbox")
+}
+
+model feed_interactions {
+  interaction_id String                       @id
+  unit_id        String
+  kind           String
+  value          String?
+  created_at_ms  BigInt
+  @@schema("feed")
+  @@map("interactions")
+}
+
+model feed_null_state_seed {
+  singleton    Boolean                      @id
+  seeded_at_ms BigInt
+  @@schema("feed")
+  @@map("null_state_seed")
+}
+
+model feed_preferences_projection {
+  singleton_id      Int                          @id
+  preferences_md    String
+  folded_through_ms BigInt
+  updated_by_run    String
+  updated_at_ms     BigInt
+  @@schema("feed")
+  @@map("preferences_projection")
+}
+
+model feed_prompt_scope_verdict {
+  singleton            Boolean                      @id
+  prompt_sha256        String
+  needs_interpretation Boolean
+  reason               String
+  classifier_version   Int
+  classified_at_ms     BigInt
+  @@schema("feed")
+  @@map("prompt_scope_verdict")
+}
+
+model feed_prompt_seed {
+  singleton    Boolean                      @id
+  seeded_at_ms BigInt
+  @@schema("feed")
+  @@map("prompt_seed")
+}
+
+model feed_promptless_unit_orders {
+  prompt_id    String
+  unit_id      String
+  local_date   DateTime
+  manual_order Float
+  @@id([prompt_id, unit_id])
+  feed_units   feed_units  @relation(fields: [unit_id], references: [unit_id])
+  @@schema("feed")
+  @@map("promptless_unit_orders")
+}
+
+model feed_prompts {
+  prompt_id                   String                       @id
+  template_id                 String?
+  slot_values                 Json
+  free_text                   String
+  enabled                     Boolean
+  created_at_ms               BigInt
+  updated_at_ms               BigInt
+  slot_ingredients            Json
+  generation_queued_at_ms     BigInt?
+  full_prompt                 String?
+  generation_queued_requester Json?
+  @@schema("feed")
+  @@map("prompts")
+}
+
+model feed_run_steps {
+  run_id          String
+  step_id         String
+  attempt         Int
+  input_hash      String
+  status          String
+  agent_id        String?
+  message_id      String?
+  output_json     Json
+  error           String?
+  started_at_ms   BigInt
+  finished_at_ms  BigInt?
+  updated_at_ms   BigInt
+  submitted_at_ms BigInt?
+  @@id([run_id, step_id, attempt])
+  @@schema("feed")
+  @@map("run_steps")
+}
+
+model feed_runs {
+  run_id                    String                       @id
+  trigger                   String
+  edition_kind              String
+  local_date                DateTime
+  tz                        String
+  prompt_id                 String?
+  prompt_snapshot           String?
+  requester                 Json?
+  slot_fulfillment          Json
+  interactions_watermark_ms BigInt?
+  status                    String
+  failure_reason            String?
+  started_at_ms             BigInt?
+  finished_at_ms            BigInt?
+  created_at_ms             BigInt
+  updated_at_ms             BigInt
+  hour_slot                 Int?
+  search_query_keys         String[]?
+  @@schema("feed")
+  @@map("runs")
+}
+
+model feed_surface_state {
+  singleton           Boolean                      @id
+  first_fetched_at_ms BigInt
+  @@schema("feed")
+  @@map("surface_state")
+}
+
+model feed_units {
+  unit_id                        String                       @id
+  run_id                         String
+  prompt_id                      String?
+  edition_kind                   String
+  edition_local_date             DateTime
+  edition_generated_at_ms        BigInt
+  position                       Int
+  kicker                         String
+  body_md                        String
+  attachment_kind                String
+  header_image_path              String?
+  image_urls                     String[]?
+  widget_html                    String?
+  social_embed_url               String?
+  category                       String
+  connector_attribution          String?
+  stats                          Json?
+  reaction                       String?
+  reaction_updated_at_ms         BigInt?
+  share_count                    BigInt
+  discuss_count                  BigInt
+  origin                         String
+  share_instructions             Json?
+  share_artifact_generated_at_ms BigInt?
+  share_artifact_stale           Boolean
+  created_at_ms                  BigInt
+  updated_at_ms                  BigInt
+  embedding                      Unsupported("vector(384)")
+  manual_order                   Float?
+  seen_at_ms                     BigInt?
+  title                          String?
+  search_vector                  Unsupported("tsvector")
+  last_seen_at_ms                BigInt?
+  timespent_ms                   BigInt?
+  social_thumbnail_url           String?
+  social_thumbnail_aspect_ratio  Float?
+  social_attribution_text        String?
+  social_post_username           String?
+  why_did_i_see_this             String?
+  source_post_url                String?
+  video_media_path               String?
+  carousel_clip_paths            String[]?
+  source_fleet_origin_id         String?
+  fleet_reaction_version         BigInt
+  emoji                          String?
+  source_idea_id                 String?
+  icon_key                       String?
+  source_url_keys                String[]?
+  activity_tier                  String?
+  feed_promptless_unit_orders    feed_promptless_unit_orders[]
+  @@schema("feed")
+  @@map("units")
+}
+
+model goals_actions {
+  action_id   BigInt                       @id
+  goal_id     String
+  status      String
+  created_at  DateTime
+  updated_at  DateTime
+  action_text String
+  goals_goals goals_goals  @relation(fields: [goal_id], references: [goal_id])
+  goals_thread_actions goals_thread_actions[]
+  @@schema("goals")
+  @@map("actions")
+}
+
+model goals_associations {
+  association_id   String                       @id
+  goal_id          String
+  association_type String
+  target_id        String
+  details_json     String
+  created_at       String
+  updated_at       String
+  created_at_ts    DateTime?
+  updated_at_ts    DateTime?
+  goals_goals      goals_goals  @relation(fields: [goal_id], references: [goal_id])
+  @@schema("goals")
+  @@map("associations")
+}
+
+model goals_briefings {
+  briefing_id       String                       @id
+  goal_id           String
+  path              String
+  created_at        String
+  updated_at        String
+  last_opened_at    String?
+  created_at_ts     DateTime?
+  updated_at_ts     DateTime?
+  last_opened_at_ts DateTime?
+  hero_image_path   String?
+  goals_goals       goals_goals  @relation(fields: [goal_id], references: [goal_id])
+  @@schema("goals")
+  @@map("briefings")
+}
+
+model goals_engagement_events {
+  event_id   String                       @id
+  goal_id    String
+  event_type String
+  surface    String?
+  value      Float?
+  request_id String
+  metadata   Json
+  created_at DateTime
+  goals_goals goals_goals  @relation(fields: [goal_id], references: [goal_id])
+  @@schema("goals")
+  @@map("engagement_events")
+}
+
+model goals_goals {
+  goal_id                   String                       @id
+  activity_key              String?
+  slug                      String?
+  title                     String
+  summary                   String?
+  description               String?
+  momentum                  String?
+  momentum_status           String?
+  emoji                     String?
+  image_relpath             String?
+  icon_generation_status    String?
+  status                    String
+  created_at                String
+  updated_at                String
+  parent_goal_id            String?
+  sort_order                Float
+  completed_at              String?
+  created_at_ts             DateTime?
+  updated_at_ts             DateTime?
+  last_activity_at          String?
+  last_activity_at_ts       DateTime?
+  pushable                  Boolean
+  category                  String?
+  goal_kind                 String?
+  value_alignment           String?
+  user_words                String?
+  assistant_distillation    String?
+  woop                      Json?
+  implementation_intentions Json?
+  monitoring_signal         String?
+  review_cadence            String?
+  next_review_question      String?
+  momentum_dimensions       Json?
+  adjustment_recommendation String?
+  provenance                Json?
+  completed_at_ts           DateTime?
+  source                    String
+  attention_kind            String
+  attention_updated_at      DateTime
+  next_due_at               DateTime?
+  escalation                Json?
+  escalation_due_at         DateTime?
+  fixed_position            BigInt?
+  goals_goals               goals_goals?  @relation(fields: [parent_goal_id], references: [goal_id])
+  goals_actions             goals_actions[]
+  goals_associations        goals_associations[]
+  goals_briefings           goals_briefings[]
+  goals_engagement_events   goals_engagement_events[]
+  goals_goals               goals_goals[]
+  goals_learning_state      goals_learning_state[]
+  goals_momentum_history    goals_momentum_history[]
+  goals_sessions            goals_sessions[]
+  goals_suggestions         goals_suggestions[]
+  goals_threads             goals_threads[]
+  goals_updates             goals_updates[]
+  @@schema("goals")
+  @@map("goals")
+}
+
+model goals_learning_state {
+  goal_id           String                       @id
+  target_skill      String?
+  prerequisites     Json
+  mastery_estimate  Float?
+  mastery_evidence  Json
+  misconceptions    Json
+  last_retrieval_at DateTime?
+  next_review_at    DateTime?
+  confidence        Float?
+  transfer_status   String?
+  study_status      String
+  last_studied_at   DateTime?
+  updated_at_ts     DateTime
+  goals_goals       goals_goals  @relation(fields: [goal_id], references: [goal_id])
+  @@schema("goals")
+  @@map("learning_state")
+}
+
+model goals_momentum_history {
+  history_id                BigInt                       @id
+  goal_id                   String
+  momentum_status           String?
+  momentum_dimensions       Json?
+  adjustment_recommendation String?
+  source                    String
+  run_id                    String?
+  observed_at               DateTime
+  created_at                DateTime
+  goals_goals               goals_goals  @relation(fields: [goal_id], references: [goal_id])
+  @@schema("goals")
+  @@map("momentum_history")
+}
+
+model goals_sessions {
+  root_goal_id  String                       @id
+  root_agent_id String
+  session_id    String
+  goals_goals   goals_goals  @relation(fields: [root_goal_id], references: [goal_id])
+  @@schema("goals")
+  @@map("sessions")
+}
+
+model goals_suggestions {
+  suggestion_id String                       @id
+  goal_id       String
+  idea_id       String
+  status        String
+  created_at    String
+  updated_at    String
+  created_at_ts DateTime?
+  updated_at_ts DateTime?
+  goals_goals   goals_goals  @relation(fields: [goal_id], references: [goal_id])
+  @@schema("goals")
+  @@map("suggestions")
+}
+
+model goals_thread_actions {
+  thread_action_id BigInt                       @id
+  thread_id        BigInt
+  action_id        BigInt?
+  created_at       DateTime
+  goals_actions    goals_actions?  @relation(fields: [action_id], references: [action_id])
+  goals_threads    goals_threads  @relation(fields: [thread_id], references: [thread_id])
+  @@schema("goals")
+  @@map("thread_actions")
+}
+
+model goals_threads {
+  thread_id  BigInt                       @id
+  goal_id    String
+  request_id String?
+  created_at DateTime
+  goals_goals goals_goals  @relation(fields: [goal_id], references: [goal_id])
+  runtime_requests runtime_requests?  @relation(fields: [request_id], references: [request_id])
+  goals_thread_actions goals_thread_actions[]
+  @@schema("goals")
+  @@map("threads")
+}
+
+model goals_updates {
+  update_id       String                       @id
+  goal_id         String
+  title           String?
+  summary         String?
+  description     String?
+  effective_at    String?
+  created_at      String
+  updated_at      String
+  effective_at_ts DateTime?
+  updated_at_ts   DateTime?
+  author_source   String
+  goals_goals     goals_goals  @relation(fields: [goal_id], references: [goal_id])
+  @@schema("goals")
+  @@map("updates")
+}
+
+model health_aggregates {
+  aggregate_id   BigInt                       @id
+  provider       String
+  node_id        String?
+  timezone       String?
+  aggregate_type String
+  period_start   DateTime
+  period_end     DateTime
+  numeric_value  Float?
+  unit           String?
+  @@schema("health")
+  @@map("aggregates")
+}
+
+model health_events {
+  health_event_id   BigInt                       @id
+  provider          String
+  node_id           String?
+  external_event_id String?
+  bundle_id         String?
+  timezone          String?
+  event_type        String
+  event_at          DateTime
+  event_end_at      DateTime?
+  event_text        String?
+  @@schema("health")
+  @@map("events")
+}
+
+model health_record_values {
+  record_value_id BigInt                       @id
+  record_table    String
+  record_id       BigInt
+  value_name      String
+  unit            String?
+  numeric_value   Float?
+  text_value      String?
+  @@schema("health")
+  @@map("record_values")
+}
+
+model health_sample_values {
+  sample_value_id BigInt                       @id
+  sample_id       BigInt
+  value_name      String
+  unit            String?
+  numeric_value   Float?
+  text_value      String?
+  health_samples  health_samples  @relation(fields: [sample_id], references: [sample_id])
+  @@schema("health")
+  @@map("sample_values")
+}
+
+model health_samples {
+  sample_id          BigInt                       @id
+  provider           String
+  node_id            String?
+  external_sample_id String
+  bundle_id          String?
+  sample_type        String
+  start_at           DateTime
+  end_at             DateTime?
+  unit               String?
+  numeric_value      Float?
+  text_value         String?
+  source_name        String?
+  created_at         DateTime
+  timezone           String?
+  health_sample_values health_sample_values[]
+  @@schema("health")
+  @@map("samples")
+}
+
+model health_sleep_sessions {
+  sleep_session_id           BigInt                       @id
+  provider                   String
+  node_id                    String?
+  external_sleep_id          String
+  bundle_id                  String?
+  timezone                   String?
+  start_at                   DateTime
+  end_at                     DateTime
+  quality_score              Float?
+  awake_seconds              Float?
+  core_seconds               Float?
+  deep_seconds               Float?
+  rem_seconds                Float?
+  asleep_unspecified_seconds Float?
+  asleep_seconds             Int?
+  in_bed_seconds             Int?
+  created_at                 DateTime
+  @@schema("health")
+  @@map("sleep_sessions")
+}
+
+model health_synced_ranges {
+  synced_range_id BigInt                       @id
+  provider        String
+  node_id         String?
+  category        String
+  span            Unsupported("tstzrange")
+  updated_at      DateTime
+  @@schema("health")
+  @@map("synced_ranges")
+}
+
+model health_workouts {
+  workout_id          BigInt                       @id
+  provider            String
+  node_id             String?
+  external_workout_id String
+  bundle_id           String?
+  timezone            String?
+  workout_type        String
+  start_at            DateTime
+  end_at              DateTime?
+  active_seconds      Float?
+  energy_kcal         Float?
+  distance_meters     Float?
+  hr_max_bpm          Float?
+  hr_average_bpm      Float?
+  created_at          DateTime
+  @@schema("health")
+  @@map("workouts")
+}
+
+model ideas_bandit_arm_state {
+  policy_id             String
+  domain                String
+  lane                  String
+  decision_points       BigInt
+  terminal_rewards      BigInt
+  terminal_observations BigInt
+  fast_reward_sum       Float
+  fast_observations     BigInt
+  updated_at            DateTime
+  @@id([policy_id, domain, lane])
+  ideas_explore_policy  ideas_explore_policy  @relation(fields: [policy_id], references: [policy_id])
+  @@schema("ideas")
+  @@map("bandit_arm_state")
+}
+
+model ideas_bandit_fold_state {
+  policy_id       String                       @id
+  folded_until    DateTime?
+  folded_event_id String?
+  updated_at      DateTime
+  ideas_explore_policy ideas_explore_policy  @relation(fields: [policy_id], references: [policy_id])
+  @@schema("ideas")
+  @@map("bandit_fold_state")
+}
+
+model ideas_bandit_folded_events {
+  policy_id  String
+  event_id   String
+  folded_at  DateTime
+  @@id([policy_id, event_id])
+  ideas_idea_events ideas_idea_events  @relation(fields: [event_id], references: [event_id])
+  ideas_explore_policy ideas_explore_policy  @relation(fields: [policy_id], references: [policy_id])
+  @@schema("ideas")
+  @@map("bandit_folded_events")
+}
+
+model ideas_discovery_pool_history {
+  snapshot_id  String                       @id
+  source       String
+  payload_json Json
+  created_at   DateTime
+  @@schema("ideas")
+  @@map("discovery_pool_history")
+}
+
+model ideas_discovery_pool_meta {
+  key          String                       @id
+  source       String
+  payload_json Json
+  updated_at   DateTime
+  @@schema("ideas")
+  @@map("discovery_pool_meta")
+}
+
+model ideas_explore_policy {
+  policy_id      String                       @id
+  explore_floor  Int
+  per_domain_min Int
+  version        String
+  updated_at     DateTime
+  ideas_bandit_arm_state ideas_bandit_arm_state[]
+  ideas_bandit_fold_state ideas_bandit_fold_state[]
+  ideas_bandit_folded_events ideas_bandit_folded_events[]
+  @@schema("ideas")
+  @@map("explore_policy")
+}
+
+model ideas_feed_snapshot_cards {
+  snapshot_id        String
+  section_id         String
+  position           Int
+  source_key         String
+  origin             String
+  display_title      String?
+  display_summary    String?
+  context_label      String?
+  detail_description String?
+  build_summary      String?
+  type_label         String?
+  prerequisite_notes String?
+  @@id([snapshot_id, section_id, position])
+  @@schema("ideas")
+  @@map("feed_snapshot_cards")
+}
+
+model ideas_feed_snapshot_sections {
+  snapshot_id String
+  section_id  String
+  position    Int
+  role        String
+  title       String
+  subtitle    String?
+  @@id([snapshot_id, section_id])
+  ideas_feed_snapshots ideas_feed_snapshots  @relation(fields: [snapshot_id], references: [snapshot_id])
+  @@schema("ideas")
+  @@map("feed_snapshot_sections")
+}
+
+model ideas_feed_snapshots {
+  snapshot_id  String                       @id
+  generated_at DateTime
+  is_active    Boolean
+  ideas_feed_snapshot_sections ideas_feed_snapshot_sections[]
+  @@schema("ideas")
+  @@map("feed_snapshots")
+}
+
+model ideas_icon_embeddings {
+  icon_key            String
+  model_name          String
+  descriptions_digest String
+  embedding           Unsupported("vector(384)")
+  created_at          DateTime
+  @@id([icon_key, model_name, descriptions_digest])
+  @@schema("ideas")
+  @@map("icon_embeddings")
+}
+
+model ideas_idea_anchors {
+  idea_id          String
+  anchor_kind      String
+  anchor_id        String
+  lifecycle_status String
+  build_status     String?
+  surfaced_at      DateTime?
+  impression_count Int
+  decided_at       DateTime?
+  dismiss_reason   String?
+  created_at       DateTime
+  updated_at       DateTime
+  @@id([idea_id, anchor_kind, anchor_id])
+  ideas_ideas      ideas_ideas  @relation(fields: [idea_id], references: [idea_id])
+  @@schema("ideas")
+  @@map("idea_anchors")
+}
+
+model ideas_idea_build_status {
+  source_namespace  String
+  source_kind       String
+  source_id         String
+  status            String
+  updated_at        DateTime
+  selected_item_ids String[]?
+  @@id([source_namespace, source_kind, source_id])
+  @@schema("ideas")
+  @@map("idea_build_status")
+}
+
+model ideas_idea_card_feeds {
+  feed_id      String                       @id
+  source       String
+  payload_json Json
+  generated_at DateTime
+  updated_at   DateTime
+  @@schema("ideas")
+  @@map("idea_card_feeds")
+}
+
+model ideas_idea_dedup {
+  idea_id             String                       @id
+  content_fingerprint String
+  embedding_ref       String?
+  canonical_idea_id   String?
+  merged_at           DateTime?
+  merge_reason        String?
+  created_at          DateTime
+  ideas_ideas_canonical_idea_id ideas_ideas?  @relation(fields: [canonical_idea_id], references: [idea_id])
+  ideas_ideas_idea_id ideas_ideas  @relation(fields: [idea_id], references: [idea_id])
+  @@schema("ideas")
+  @@map("idea_dedup")
+}
+
+model ideas_idea_events {
+  event_id         String                       @id
+  idea_id          String
+  event_type       String
+  dismissal_reason String?
+  anchor_kind      String?
+  anchor_id        String?
+  lane             String?
+  request_id       String
+  metadata         Json
+  created_at       DateTime
+  ideas_ideas      ideas_ideas  @relation(fields: [idea_id], references: [idea_id])
+  ideas_bandit_folded_events ideas_bandit_folded_events[]
+  @@schema("ideas")
+  @@map("idea_events")
+}
+
+model ideas_idea_feedback_state {
+  idea_id    String                       @id
+  feedback   String
+  reason     String?
+  event_id   String
+  surface    String?
+  created_at DateTime
+  updated_at DateTime
+  ideas_ideas ideas_ideas  @relation(fields: [idea_id], references: [idea_id])
+  @@schema("ideas")
+  @@map("idea_feedback_state")
+}
+
+model ideas_idea_install_assets {
+  asset_id   String                       @id
+  idea_id    String
+  asset_type String
+  asset_json Json
+  created_at DateTime
+  updated_at DateTime
+  ideas_ideas ideas_ideas  @relation(fields: [idea_id], references: [idea_id])
+  @@schema("ideas")
+  @@map("idea_install_assets")
+}
+
+model ideas_idea_items {
+  idea_item_id        String                       @id
+  idea_id             String
+  position            Int
+  kind                String
+  title               String
+  summary             String
+  detail_description  String?
+  instructions        String?
+  build_plan_markdown String?
+  status              String?
+  created_at          DateTime
+  updated_at          DateTime
+  ideas_ideas         ideas_ideas  @relation(fields: [idea_id], references: [idea_id])
+  @@schema("ideas")
+  @@map("idea_items")
+}
+
+model ideas_idea_quality {
+  idea_id           String                       @id
+  relevance_score   Float
+  novelty_score     Float
+  feasibility_score Float
+  composite_score   Float
+  composite_version String
+  scorer            String
+  decision_outcome  String
+  decision_reasons  Json
+  scored_at         DateTime
+  value_score       Float
+  ideas_ideas       ideas_ideas  @relation(fields: [idea_id], references: [idea_id])
+  @@schema("ideas")
+  @@map("idea_quality")
+}
+
+model ideas_idea_sources {
+  source_namespace String
+  source_kind      String
+  source_id        String
+  idea_id          String
+  position         Int?
+  metadata_json    Json
+  @@id([source_namespace, source_kind, source_id])
+  ideas_ideas      ideas_ideas  @relation(fields: [idea_id], references: [idea_id])
+  @@schema("ideas")
+  @@map("idea_sources")
+}
+
+model ideas_idea_tags {
+  idea_id    String
+  position   Int
+  tag        String
+  @@id([idea_id, position])
+  ideas_ideas ideas_ideas  @relation(fields: [idea_id], references: [idea_id])
+  @@schema("ideas")
+  @@map("idea_tags")
+}
+
+model ideas_ideas {
+  idea_id            String                       @id
+  kind               String
+  title              String
+  summary            String
+  rationale          String?
+  category_label     String?
+  date_label         String?
+  audience           String?
+  lane               String?
+  install_markdown   String?
+  created_at         DateTime
+  updated_at         DateTime
+  domain             String
+  dedup_key          String?
+  expires_at         DateTime?
+  generator          String?
+  search_vector      Unsupported("tsvector")
+  prerequisite_notes String?
+  build_summary      String?
+  category_index     BigInt?
+  embedding          Unsupported("vector(384)")
+  ideas_idea_anchors ideas_idea_anchors[]
+  ideas_idea_dedup_canonical_idea_id ideas_idea_dedup[]
+  ideas_idea_dedup_idea_id ideas_idea_dedup[]
+  ideas_idea_events  ideas_idea_events[]
+  ideas_idea_feedback_state ideas_idea_feedback_state[]
+  ideas_idea_install_assets ideas_idea_install_assets[]
+  ideas_idea_items   ideas_idea_items[]
+  ideas_idea_quality ideas_idea_quality[]
+  ideas_idea_sources ideas_idea_sources[]
+  ideas_idea_tags    ideas_idea_tags[]
+  @@schema("ideas")
+  @@map("ideas")
+}
+
+model ingest_data_source_events {
+  event_id               BigInt                       @id
+  global_seq             BigInt
+  ingest_id              String
+  producer_id            String
+  source                 String
+  origin                 String
+  processing_lane        String
+  received_at_text       String
+  received_at_unix_ms    BigInt
+  payload_representation String
+  payload_sha256         String?
+  status                 String
+  received_at            DateTime
+  processed_at_text      String?
+  processed_at_unix_ms   BigInt?
+  processed_at           DateTime?
+  handoff_message_id     String?
+  summary_preview        String?
+  failure_code           String?
+  failure_message        String?
+  payload                String
+  presentation_locale    String?
+  @@schema("ingest")
+  @@map("data_source_events")
+}
+
+model media_descriptions {
+  media_id           String                       @id
+  model              String?
+  version            BigInt
+  created_at         DateTime
+  description_text   String
+  summary_short_text String
+  summary_full_text  String?
+  people_text        String?
+  activity_text      String?
+  objects_text       String?
+  ocr_text           String?
+  location_hint_text String?
+  @@schema("media")
+  @@map("descriptions")
+}
+
+model media_exif_values {
+  exif_value_id BigInt                       @id
+  media_id      String
+  tag_name      String
+  scalar_type   String
+  scalar_value  String
+  @@schema("media")
+  @@map("exif_values")
+}
+
+model media_items {
+  media_id                       String                       @id
+  source                         String
+  source_media_id                String
+  node_id                        String?
+  file_uri                       String
+  media_type                     String
+  sha256                         Bytes?
+  byte_len                       BigInt?
+  taken_at                       DateTime?
+  taken_at_local                 String?
+  taken_at_local_date            DateTime?
+  uploaded_at                    DateTime
+  uploaded_at_unix               BigInt
+  local_identifier               String?
+  description_status             String
+  description_attempt_count      Int
+  description_next_retry_at_unix BigInt?
+  @@schema("media")
+  @@map("items")
+}
+
+model media_locations {
+  media_id                   String                       @id
+  latitude                   Float?
+  longitude                  Float?
+  altitude_meters            Float?
+  location_source            String?
+  geocode_attempt_count      Int
+  geocode_next_retry_at_unix BigInt?
+  location_text              String?
+  @@schema("media")
+  @@map("locations")
+}
+
+model memory_claims {
+  claim_id            String                       @id
+  run_id              String
+  kind                String
+  salience            String
+  claim_text          String
+  quote               String?
+  speaker             String
+  evidence_handles    Json
+  supersedes_claim_id String?
+  status              String
+  confidence          Float
+  first_seen          DateTime
+  reinforced_at       DateTime
+  valid_until         DateTime?
+  source_path         String
+  source_line         BigInt
+  created_at          DateTime
+  updated_at          DateTime
+  @@schema("memory")
+  @@map("claims")
+}
+
+model memory_embedding_models {
+  embedding_model_id BigInt                       @id
+  model_name         String
+  dimensions         Int
+  distance_metric    String
+  created_at         DateTime
+  memory_embeddings  memory_embeddings[]
+  @@schema("memory")
+  @@map("embedding_models")
+}
+
+model memory_embeddings {
+  memory_embedding_id BigInt                       @id
+  memory_entry_id     BigInt
+  embedding_model_id  BigInt
+  embedding           Unsupported("vector(384)")
+  created_at          DateTime
+  memory_embedding_models memory_embedding_models  @relation(fields: [embedding_model_id], references: [embedding_model_id])
+  memory_entries      memory_entries  @relation(fields: [memory_entry_id], references: [memory_entry_id])
+  @@schema("memory")
+  @@map("embeddings")
+}
+
+model memory_entries {
+  memory_entry_id BigInt                       @id
+  memory_uri      String
+  chunk_id        String
+  source_type     String
+  status          String
+  privacy_class   String
+  confidence      Float
+  citation_path   String?
+  line_start      BigInt
+  line_end        BigInt
+  created_at      DateTime
+  created_at_unix BigInt
+  title_text      String?
+  body_text       String
+  reason_text     String?
+  memory_embeddings memory_embeddings[]
+  memory_entry_attributes memory_entry_attributes[]
+  @@schema("memory")
+  @@map("entries")
+}
+
+model memory_entry_attributes {
+  memory_entry_attribute_id BigInt                       @id
+  memory_entry_id           BigInt
+  attribute_name            String
+  scalar_value              String
+  memory_entries            memory_entries  @relation(fields: [memory_entry_id], references: [memory_entry_id])
+  @@schema("memory")
+  @@map("entry_attributes")
+}
+
+model memory_metadata {
+  key        String                       @id
+  value      String
+  updated_at DateTime
+  @@schema("memory")
+  @@map("metadata")
+}
+
+model messages_native {
+  message_id      BigInt                       @id
+  node_id         String
+  external_id     String
+  thread_id       String?
+  address         String?
+  contact_name    String?
+  body            String?
+  direction       String?
+  kind            String?
+  is_read         Boolean?
+  sent_at_unix_ms BigInt?
+  created_at      DateTime
+  @@schema("messages")
+  @@map("native")
+}
+
+model podcasts_episodes {
+  slug                String                       @id
+  title               String
+  description         String
+  created_at          String
+  duration_secs       BigInt
+  audio_path          String
+  chunk_count         BigInt
+  cover_path          String?
+  episode_url         String?
+  feed_url            String?
+  updated_at          DateTime
+  spotify_episode_uri String?
+  script              String?
+  topics              String?
+  @@schema("podcasts")
+  @@map("episodes")
+}
+
+model podcasts_feed {
+  singleton        Boolean                      @id
+  feed_title       String
+  feed_id          String?
+  feed_url         String?
+  cover_path       String?
+  updated_at       DateTime
+  spotify_show_url String?
+  spotify_show_id  String?
+  @@schema("podcasts")
+  @@map("feed")
+}
+
+model podcasts_feeds {
+  feed_id          String                       @id
+  feed_title       String
+  feed_url         String?
+  cover_path       String?
+  spotify_show_url String?
+  spotify_show_id  String?
+  created_at       DateTime
+  updated_at       DateTime
+  @@schema("podcasts")
+  @@map("feeds")
+}
+
+model runtime_agent_todo_snapshots {
+  conversation_id String
+  agent_identity  String
+  items_json      String
+  revision        BigInt
+  updated_at_ms   BigInt
+  @@id([conversation_id, agent_identity])
+  @@schema("runtime")
+  @@map("agent_todo_snapshots")
+}
+
+model runtime_avatar_state {
+  singleton                          Boolean                      @id
+  active_stem                        String
+  image_path                         String
+  darkmode_image_path                String?
+  chat_theme_color                   String?
+  chat_theme_color_override          String?
+  static_frame_paths                 String[]
+  video_variants_json                String
+  darkmode_video_variants_json       String
+  video_variant_repair_json          String
+  darkmode_video_variant_repair_json String
+  revision                           BigInt
+  updated_at_ms                      BigInt
+  image_variant_assets_json          String
+  avatar_asset_repair_json           String
+  choreography_profile_json          String?
+  finalization_id                    String?
+  avatar_milestones_json             String
+  legacy_folded_at_ms                BigInt?
+  @@schema("runtime")
+  @@map("avatar_state")
+}
+
+model runtime_browser_tasks {
+  task_id                      String                       @id
+  browser_session_id           String
+  root_session_id              String
+  owner_agent_id               String?
+  root_message_id              String
+  stream_owner_message_id      String
+  status                       String
+  title                        String
+  step_count                   Int
+  channel_context_json         String?
+  latest_action_id             String?
+  latest_tab_json              String?
+  latest_screenshot_json       String?
+  created_at                   DateTime
+  updated_at                   DateTime
+  completed_at                 DateTime?
+  terminal_reason              String?
+  admission_seq                BigInt?
+  presentation_root_session_id String?
+  parent_agent_id              String?
+  tool_call_id                 String?
+  request_trace_context_json   String?
+  requester_source             String?
+  requester_channel            String?
+  requester_model              String?
+  requester_effective_model    String?
+  request_mode_json            String?
+  max_training_tier_json       String?
+  is_task_card_visible         Boolean
+  initial_instruction          String?
+  history_source_agent_id      String?
+  state_revision               BigInt
+  deadline_at                  DateTime?
+  continuation_root_task_id    String?
+  terminal_interrupt_subtype   String?
+  outcome_status               String?
+  outcome_reason               String?
+  outcome_at                   DateTime?
+  retention_end_reason         String?
+  card_generation              BigInt
+  input_grants_json            String
+  browser_navigation_attempted Boolean
+  terminal_user_update_due_at  DateTime?
+  egress_profile               String?
+  run_number                   BigInt?
+  run_started_at               DateTime?
+  run_presentation_locale      String?
+  run_location_context_json    String?
+  owner_kind                   String?
+  broker_instance              String
+  @@schema("runtime")
+  @@map("browser_tasks")
+}
+
+model runtime_channel_deliveries {
+  delivery_key             String                       @id
+  delivery_kind            String
+  surface                  String
+  target                   String?
+  payload_json             String
+  state                    String
+  dispatch_boot_generation String?
+  attempt_count            Int
+  next_attempt_at_utc      BigInt
+  result_json              String?
+  last_error               String?
+  created_at_utc           BigInt
+  updated_at_utc           BigInt
+  terminal_at_utc          BigInt?
+  @@schema("runtime")
+  @@map("channel_deliveries")
+}
+
+model runtime_channel_message_bindings {
+  binding_id          BigInt                       @id
+  channel_message_id  String?
+  channel             String?
+  jarvis_message_id   String
+  provider            String?
+  provider_channel_id String?
+  provider_message_id String?
+  created_at_ms       BigInt?
+  created_at          DateTime
+  @@schema("runtime")
+  @@map("channel_message_bindings")
+}
+
+model runtime_chat_event_derived_write_backlog {
+  event_seq       BigInt                       @id
+  resources_json  String
+  attempts        Int
+  last_error      String?
+  created_at      DateTime
+  updated_at      DateTime
+  deadlettered_at DateTime?
+  runtime_events  runtime_events  @relation(fields: [event_seq], references: [event_seq])
+  @@schema("runtime")
+  @@map("chat_event_derived_write_backlog")
+}
+
+model runtime_checkout_spend_checkpoints {
+  operation_id   String
+  provider       String
+  checkpoint_key String
+  external_id    String?
+  detail         Json?
+  claimed_at_ms  BigInt
+  bound_at_ms    BigInt?
+  @@id([operation_id, checkpoint_key])
+  runtime_checkout_spend_operations runtime_checkout_spend_operations  @relation(fields: [operation_id], references: [operation_id])
+  @@schema("runtime")
+  @@map("checkout_spend_checkpoints")
+}
+
+model runtime_checkout_spend_operations {
+  operation_id        String                       @id
+  client_task_key     String
+  checkout_request_id String?
+  wallet_request_id   String?
+  approval_id         String?
+  state               String
+  expires_at_ms       BigInt
+  created_at_ms       BigInt
+  updated_at_ms       BigInt
+  terminal_result     Json?
+  recovery_epoch      Int
+  wallet_provider     String
+  runtime_checkout_spend_checkpoints runtime_checkout_spend_checkpoints[]
+  @@schema("runtime")
+  @@map("checkout_spend_operations")
+}
+
+model runtime_client_rendering_capabilities {
+  singleton                      Boolean                      @id
+  client_id                      String
+  platform                       String
+  supported_presentations        String[]
+  supported_inline_presentations String[]
+  declared_at                    DateTime
+  @@schema("runtime")
+  @@map("client_rendering_capabilities")
+}
+
+model runtime_context_snapshots {
+  snapshot_kind    String
+  owner_key        String
+  version          BigInt
+  source_watermark String?
+  fingerprint      String?
+  freshness_class  String
+  state_json       String
+  refreshed_at     DateTime
+  invalidated_at   DateTime?
+  stale_after      DateTime?
+  last_error       String?
+  updated_at       DateTime
+  @@id([snapshot_kind, owner_key])
+  @@schema("runtime")
+  @@map("context_snapshots")
+}
+
+model runtime_dev_notice_watermark {
+  singleton            Boolean                      @id
+  last_seen_version_id BigInt
+  @@schema("runtime")
+  @@map("dev_notice_watermark")
+}
+
+model runtime_event_channels {
+  channel    String
+  event_seq  BigInt
+  @@id([channel, event_seq])
+  runtime_events runtime_events  @relation(fields: [event_seq], references: [event_seq])
+  @@schema("runtime")
+  @@map("event_channels")
+}
+
+model runtime_event_hook_space_owners {
+  hook_id    String                       @id
+  space_slug String
+  created_at DateTime
+  updated_at DateTime
+  @@schema("runtime")
+  @@map("event_hook_space_owners")
+}
+
+model runtime_event_payload_fields {
+  event_payload_field_id BigInt                       @id
+  event_seq              BigInt
+  field_path             String
+  scalar_type            String
+  scalar_value           String?
+  text_value             String?
+  runtime_events         runtime_events  @relation(fields: [event_seq], references: [event_seq])
+  @@schema("runtime")
+  @@map("event_payload_fields")
+}
+
+model runtime_events {
+  event_seq               BigInt                       @id
+  event_id                String                       @db.Uuid
+  event_kind              String  // custom enum runtime.event_kind; values not in reference
+  event_name              String
+  request_id              String?
+  root_request_id         String?
+  parent_request_id       String?
+  transcript_surface      String  // custom enum runtime.transcript_surface; values not in reference
+  visibility              String  // custom enum runtime.visibility; values not in reference
+  source                  String
+  role                    String?  // custom enum runtime.message_role; values not in reference
+  chat_kind               String
+  stream_lane             String
+  message_id              String?
+  parent_message_id       String?
+  reply_to_message_id     String?
+  reply_target_message_id String?
+  parent_agent_id         String?
+  agent_id                String?
+  idempotency_key         String?
+  display_text_ready      Boolean
+  created_at              DateTime
+  payload_json            String?
+  channel_context_json    String?
+  runtime_requests_parent_request_id runtime_requests?  @relation(fields: [parent_request_id], references: [request_id])
+  runtime_requests_request_id runtime_requests?  @relation(fields: [request_id], references: [request_id])
+  runtime_requests_root_request_id runtime_requests?  @relation(fields: [root_request_id], references: [request_id])
+  agent_message_mailbox   agent_message_mailbox[]
+  agent_runtime_state     agent_runtime_state[]
+  agent_subagent_progress agent_subagent_progress[]
+  runtime_chat_event_derived_write_backlog runtime_chat_event_derived_write_backlog[]
+  runtime_event_channels  runtime_event_channels[]
+  runtime_event_payload_fields runtime_event_payload_fields[]
+  runtime_messages        runtime_messages[]
+  runtime_resources       runtime_resources[]
+  runtime_tool_calls      runtime_tool_calls[]
+  runtime_tool_outputs    runtime_tool_outputs[]
+  @@schema("runtime")
+  @@map("events")
+}
+
+model runtime_execute_resolve_runs {
+  run_id             String                       @id
+  worker_kind        String
+  source_ref         String
+  lane_key           String
+  status             String
+  terminal_decision  String?
+  terminal_message   String?
+  handoff_message_id String?
+  last_error_stage   String?
+  last_error_message String?
+  metadata_json      Json
+  created_at         DateTime
+  updated_at         DateTime
+  worker_generation  BigInt
+  worker_phase       String?
+  worker_agent_id    String?
+  worker_started_at  DateTime?
+  execute_message_id String?
+  resolve_message_id String?
+  @@schema("runtime")
+  @@map("execute_resolve_runs")
+}
+
+model runtime_idea_execution_pending {
+  activation_id              String                       @id
+  root_submission_message_id String
+  session_id                 String
+  idea_card_id               String
+  idea_card_kind             String
+  dispatched_at              DateTime
+  reconciled_at              DateTime?
+  @@schema("runtime")
+  @@map("idea_execution_pending")
+}
+
+model runtime_invite_badge_seen_state {
+  singleton               Boolean                      @id
+  last_seen_badge_version BigInt
+  @@schema("runtime")
+  @@map("invite_badge_seen_state")
+}
+
+model runtime_maintenance_markers {
+  marker_key   String                       @id
+  completed_at DateTime
+  detail_json  Json
+  @@schema("runtime")
+  @@map("maintenance_markers")
+}
+
+model runtime_message_attachments {
+  attachment_id      BigInt                       @id
+  message_id         String
+  ordinal            Int
+  attachment_kind    String
+  file_uri           String
+  media_type         String?
+  byte_len           BigInt?
+  sha256             Bytes?
+  caption_text       String?
+  transcription_text String?
+  runtime_messages   runtime_messages  @relation(fields: [message_id], references: [message_id])
+  @@schema("runtime")
+  @@map("message_attachments")
+}
+
+model runtime_message_reactions {
+  message_id     String                       @id
+  reaction_emoji String?
+  updated_at     DateTime
+  runtime_messages runtime_messages  @relation(fields: [message_id], references: [message_id])
+  @@schema("runtime")
+  @@map("message_reactions")
+}
+
+model runtime_messages {
+  message_id          String                       @id
+  event_seq           BigInt
+  role                String  // custom enum runtime.message_role; values not in reference
+  prompt_rendering_id BigInt?
+  author_label        String?
+  provider_message_id String?
+  created_at          DateTime
+  body                String?
+  runtime_events      runtime_events  @relation(fields: [event_seq], references: [event_seq])
+  agent_context_items agent_context_items[]
+  runtime_message_attachments runtime_message_attachments[]
+  runtime_message_reactions runtime_message_reactions[]
+  @@schema("runtime")
+  @@map("messages")
+}
+
+model runtime_product_improvements_preference {
+  singleton  Boolean                      @id
+  enabled    Boolean
+  updated_at DateTime
+  @@schema("runtime")
+  @@map("product_improvements_preference")
+}
+
+model runtime_raw_signal_collections {
+  collection_id            String                       @id @db.Uuid
+  tool                     String
+  mode                     String
+  fetched_at               DateTime
+  partial                  Boolean
+  skipped                  Boolean
+  per_request_timeout_secs Int
+  max_total_secs           Int
+  source_names             String[]
+  entry_count              Int
+  metadata_json            Json
+  created_at               DateTime
+  runtime_raw_signal_entries runtime_raw_signal_entries[]
+  @@schema("runtime")
+  @@map("raw_signal_collections")
+}
+
+model runtime_raw_signal_entries {
+  entry_id      BigInt                       @id
+  collection_id String                       @db.Uuid
+  ordinal       Int
+  source        String
+  name          String
+  method        String
+  logical_url   String
+  ok            Boolean
+  status        Int?
+  logical_path  String?
+  error         String?
+  duration_ms   BigInt
+  bytes         BigInt?
+  body_json     Json?
+  created_at    DateTime
+  runtime_raw_signal_collections runtime_raw_signal_collections  @relation(fields: [collection_id], references: [collection_id])
+  @@schema("runtime")
+  @@map("raw_signal_entries")
+}
+
+model runtime_requests {
+  request_id         String                       @id
+  root_request_id    String?
+  parent_request_id  String?
+  request_origin     String
+  transcript_surface String  // custom enum runtime.transcript_surface; values not in reference
+  root_work_class    String
+  created_at         DateTime
+  runtime_requests_parent_request_id runtime_requests?  @relation(fields: [parent_request_id], references: [request_id])
+  runtime_requests_root_request_id runtime_requests?  @relation(fields: [root_request_id], references: [request_id])
+  agent_agents       agent_agents[]
+  agent_sessions     agent_sessions[]
+  agent_subagent_spawns agent_subagent_spawns[]
+  agent_token_usage  agent_token_usage[]
+  goals_threads      goals_threads[]
+  runtime_events_parent_request_id runtime_events[]
+  runtime_events_request_id runtime_events[]
+  runtime_events_root_request_id runtime_events[]
+  runtime_requests_parent_request_id runtime_requests[]
+  runtime_requests_root_request_id runtime_requests[]
+  runtime_work_items runtime_work_items[]
+  scheduler_job_runs scheduler_job_runs[]
+  spaces_action_invocations spaces_action_invocations[]
+  @@schema("runtime")
+  @@map("requests")
+}
+
+model runtime_resources {
+  resource_id   BigInt                       @id
+  event_seq     BigInt
+  ordinal       Int
+  resource_kind String
+  resource_key  String
+  label         String?
+  mime_type     String?
+  size_bytes    BigInt?
+  metadata_json String?
+  created_at    DateTime
+  runtime_events runtime_events  @relation(fields: [event_seq], references: [event_seq])
+  @@schema("runtime")
+  @@map("resources")
+}
+
+model runtime_search_documents {
+  search_document_id BigInt                       @id
+  owner_table        String
+  owner_key          String
+  language           Unsupported("regconfig")
+  search_vector      Unsupported("tsvector")
+  updated_at         DateTime
+  search_text        String
+  @@schema("runtime")
+  @@map("search_documents")
+}
+
+model runtime_skill_invalidation_state {
+  skill_name                       String                       @id
+  used                             Boolean
+  pending_invalidation_hash        String?
+  pending_manifest_rel_path        String?
+  last_delivered_invalidation_hash String?
+  @@schema("runtime")
+  @@map("skill_invalidation_state")
+}
+
+model runtime_stripe_link_spend_requests {
+  approval_id                                   String                       @id
+  continuation_root_task_id                     String
+  merchant_origin                               String
+  checkout_metadata                             Json
+  approved_amount_minor                         BigInt
+  approved_currency                             String
+  lifecycle_state                               String
+  create_attempt_id                             String                       @db.Uuid
+  stripe_spend_request_id                       String?
+  expires_at                                    DateTime
+  assigned_browser_task_id                      String?
+  assigned_at                                   DateTime?
+  cancel_attempt_id                             String?                      @db.Uuid
+  closed_at                                     DateTime?
+  close_reason                                  String?
+  created_at                                    DateTime
+  owner_browser_task_id                         String?
+  claiming_browser_task_lineage_id              String?
+  cancellation_confirmation_task_state_revision BigInt?
+  cancellation_confirmation_response_message_id String?
+  wallet_provider                               String
+  @@schema("runtime")
+  @@map("stripe_link_spend_requests")
+}
+
+model runtime_summaries {
+  id            BigInt                       @id
+  summary_key   String?
+  summary_text  String?
+  created_at_ms BigInt
+  @@schema("runtime")
+  @@map("summaries")
+}
+
+model runtime_tool_calls {
+  tool_call_id   BigInt                       @id
+  event_seq      BigInt
+  call_id        String
+  tool_name      String
+  server_name    String?
+  status         String
+  created_at     DateTime
+  arguments_json String?
+  runtime_events runtime_events  @relation(fields: [event_seq], references: [event_seq])
+  agent_context_items agent_context_items[]
+  @@schema("runtime")
+  @@map("tool_calls")
+}
+
+model runtime_tool_outputs {
+  tool_output_id BigInt                       @id
+  event_seq      BigInt
+  call_id        String
+  status         String
+  created_at     DateTime
+  output_text    String?
+  error_text     String?
+  runtime_events runtime_events  @relation(fields: [event_seq], references: [event_seq])
+  agent_context_items agent_context_items[]
+  @@schema("runtime")
+  @@map("tool_outputs")
+}
+
+model runtime_widgets {
+  widget_id           String                       @id
+  kind                String
+  data_json           String
+  display_text        String?
+  state_bundle_json   String
+  state_version       BigInt
+  state_updated_at_ms BigInt?
+  created_at_ms       BigInt
+  updated_at_ms       BigInt
+  @@schema("runtime")
+  @@map("widgets")
+}
+
+model runtime_work_items {
+  work_id                 String                       @id
+  root_work_id            String?
+  parent_work_id          String?
+  request_id              String?
+  root_session_id         String?
+  session_id              String?
+  agent_id                String?
+  root_message_id         String?
+  stream_owner_message_id String?
+  source                  String?
+  request_origin          String?
+  work_class              String
+  transcript_surface      String?
+  state                   String
+  phase                   String?
+  subphase                String?
+  priority                Int
+  preemptibility          String
+  deadline_at             DateTime?
+  heartbeat_at            DateTime
+  lease_owner             String?
+  retry_policy_json       String?
+  metadata_json           String
+  terminal_reason         String?
+  terminal_detail         String?
+  diagnostic_json         String?
+  created_at              DateTime
+  updated_at              DateTime
+  terminalized_at         DateTime?
+  runtime_work_items_parent_work_id runtime_work_items?  @relation(fields: [parent_work_id], references: [work_id])
+  runtime_requests        runtime_requests?  @relation(fields: [request_id], references: [request_id])
+  runtime_work_items_root_work_id runtime_work_items?  @relation(fields: [root_work_id], references: [work_id])
+  runtime_work_items_parent_work_id runtime_work_items[]
+  runtime_work_items_root_work_id runtime_work_items[]
+  @@schema("runtime")
+  @@map("work_items")
+}
+
+model runtime_workflow_agent_calls {
+  call_id             String                       @id
+  run_id              String
+  phase_run_id        String?
+  replay_key          String
+  cache_key           String
+  call_ordinal        Int
+  prompt              String
+  options_json        Json
+  child_agent_id      String?
+  status              String
+  cached_from_call_id String?
+  final_response      String?
+  input_tokens        BigInt
+  output_tokens       BigInt
+  tool_call_count     BigInt
+  duration_ms         BigInt?
+  created_at          DateTime
+  started_at          DateTime?
+  updated_at          DateTime
+  completed_at        DateTime?
+  error               String?
+  child_message_id    String?
+  runtime_workflow_agent_calls runtime_workflow_agent_calls?  @relation(fields: [cached_from_call_id], references: [call_id])
+  runtime_workflow_phase_runs runtime_workflow_phase_runs?  @relation(fields: [phase_run_id], references: [phase_run_id])
+  runtime_workflow_runs runtime_workflow_runs  @relation(fields: [run_id], references: [run_id])
+  runtime_workflow_agent_calls runtime_workflow_agent_calls[]
+  @@schema("runtime")
+  @@map("workflow_agent_calls")
+}
+
+model runtime_workflow_launch_occurrence_aliases {
+  launch_occurrence_agent_id     String
+  launch_occurrence_message_id   String
+  launch_occurrence_tool_call_id String
+  run_id                         String
+  contract_fingerprint           String
+  created_at                     DateTime
+  @@id([launch_occurrence_agent_id, launch_occurrence_message_id, launch_occurrence_tool_call_id])
+  runtime_workflow_runs          runtime_workflow_runs  @relation(fields: [run_id], references: [run_id])
+  @@schema("runtime")
+  @@map("workflow_launch_occurrence_aliases")
+}
+
+model runtime_workflow_legacy_launch_occurrence_blocks {
+  launch_occurrence_agent_id     String
+  launch_occurrence_message_id   String
+  launch_occurrence_tool_call_id String
+  legacy_run_id                  String
+  reason                         String
+  created_at                     DateTime
+  @@id([launch_occurrence_agent_id, launch_occurrence_message_id, launch_occurrence_tool_call_id])
+  runtime_workflow_runs          runtime_workflow_runs  @relation(fields: [legacy_run_id], references: [run_id])
+  @@schema("runtime")
+  @@map("workflow_legacy_launch_occurrence_blocks")
+}
+
+model runtime_workflow_phase_runs {
+  phase_run_id    String                       @id
+  run_id          String
+  phase_name      String
+  ordinal         Int
+  status          String
+  agent_total     Int
+  agent_completed Int
+  input_tokens    BigInt
+  output_tokens   BigInt
+  started_at      DateTime?
+  updated_at      DateTime
+  completed_at    DateTime?
+  error           String?
+  runtime_workflow_runs runtime_workflow_runs  @relation(fields: [run_id], references: [run_id])
+  runtime_workflow_agent_calls runtime_workflow_agent_calls[]
+  @@schema("runtime")
+  @@map("workflow_phase_runs")
+}
+
+model runtime_workflow_runs {
+  run_id                                String                       @id
+  root_agent_id                         String
+  parent_message_id                     String?
+  launching_agent_id                    String?
+  launching_message_id                  String?
+  launching_tool_call_id                String?
+  task_id                               String
+  resume_from_run_id                    String?
+  workflow_name                         String
+  description                           String
+  phases_json                           Json
+  args_json                             Json?
+  workspace_root                        String
+  script_path                           String
+  script_sha256                         String
+  request_trace_json                    Json?
+  executor_id                           String?
+  execution_attempt                     Int
+  heartbeat_at                          DateTime
+  lease_expires_at                      DateTime?
+  recovery_count                        Int
+  last_recovery_reason                  String?
+  last_recovered_at                     DateTime?
+  status                                String
+  error                                 String?
+  final_result                          String?
+  created_at                            DateTime
+  started_at                            DateTime?
+  updated_at                            DateTime
+  completed_at                          DateTime?
+  launch_mode                           String
+  terminal_handoff_channel              String?
+  terminal_handoff_delivery_target      String?
+  terminal_handoff_channel_context_json Json?
+  terminal_handoff_message_id           String?
+  terminal_handoff_delivered_at         DateTime?
+  terminal_handoff_attempt_count        Int
+  terminal_handoff_last_attempt_at      DateTime?
+  terminal_handoff_next_attempt_at      DateTime?
+  terminal_handoff_last_error           String?
+  launch_occurrence_agent_id            String?
+  launch_occurrence_message_id          String?
+  launch_occurrence_tool_call_id        String?
+  sync_wait_deadline_at                 DateTime?
+  terminal_handoff_disposition          String?
+  terminal_handoff_generation           Int
+  magi_workload_class                   String?
+  runtime_workflow_runs                 runtime_workflow_runs?  @relation(fields: [resume_from_run_id], references: [run_id])
+  runtime_workflow_agent_calls          runtime_workflow_agent_calls[]
+  runtime_workflow_launch_occurrence_aliases runtime_workflow_launch_occurrence_aliases[]
+  runtime_workflow_legacy_launch_occurrence_blocks runtime_workflow_legacy_launch_occurrence_blocks[]
+  runtime_workflow_phase_runs           runtime_workflow_phase_runs[]
+  runtime_workflow_runs                 runtime_workflow_runs[]
+  @@schema("runtime")
+  @@map("workflow_runs")
+}
+
+model runtime_writer_epoch {
+  singleton  Boolean                      @id
+  rv_epoch   BigInt
+  updated_at DateTime
+  @@schema("runtime")
+  @@map("writer_epoch")
+}
+
+model scheduler_cron_mutations {
+  mutation_seq       BigInt                       @id
+  job_id             String
+  action             String
+  occurred_at_ms     BigInt
+  carrier_message_id String
+  request_id         String
+  tool_call_id       String
+  input_message_ids  String[]
+  created_at         DateTime
+  @@schema("scheduler")
+  @@map("cron_mutations")
+}
+
+model scheduler_delivery_outbox {
+  delivery_key             String                       @id
+  job_id                   String
+  run_id                   String
+  payload_json             String
+  state                    String
+  dispatch_boot_generation String?
+  attempt_count            Int
+  next_attempt_at_utc      BigInt
+  last_error               String?
+  created_at_utc           BigInt
+  updated_at_utc           BigInt
+  delivered_at_utc         BigInt?
+  @@schema("scheduler")
+  @@map("delivery_outbox")
+}
+
+model scheduler_doctor_run_plans {
+  run_id     String                       @id
+  tasks_json Json
+  created_at DateTime
+  scheduler_job_runs scheduler_job_runs  @relation(fields: [run_id], references: [run_id])
+  @@schema("scheduler")
+  @@map("doctor_run_plans")
+}
+
+model scheduler_doctor_task_state {
+  task_name                      String                       @id
+  evidence_hash                  String
+  last_success_run_id            String
+  last_success_scheduled_for_utc BigInt
+  updated_at                     DateTime
+  @@schema("scheduler")
+  @@map("doctor_task_state")
+}
+
+model scheduler_events {
+  scheduler_event_id BigInt                       @id
+  job_id             String?
+  run_id             String?
+  event_name         String
+  detail             String?
+  created_at         DateTime
+  @@schema("scheduler")
+  @@map("events")
+}
+
+model scheduler_job_definitions {
+  job_definition_id  BigInt                       @id
+  job_id             String
+  version            Int
+  prompt_template_id BigInt?
+  created_at         DateTime
+  retired_at         DateTime?
+  task_text          String
+  scheduler_jobs     scheduler_jobs  @relation(fields: [job_id], references: [job_id])
+  scheduler_job_runs scheduler_job_runs[]
+  @@schema("scheduler")
+  @@map("job_definitions")
+}
+
+model scheduler_job_idea_scope {
+  job_id               String                       @id
+  idea_provenance_json String
+  created_at           DateTime
+  updated_at           DateTime
+  scheduler_jobs       scheduler_jobs  @relation(fields: [job_id], references: [job_id])
+  @@schema("scheduler")
+  @@map("job_idea_scope")
+}
+
+model scheduler_job_runs {
+  run_id                          String                       @id
+  job_id                          String
+  job_definition_id               BigInt?
+  request_id                      String?
+  scheduled_for                   DateTime
+  scheduled_for_utc               BigInt
+  trigger_reason                  String?
+  started_at                      DateTime?
+  started_at_utc                  BigInt?
+  finished_at                     DateTime?
+  finished_at_utc                 BigInt?
+  status                          String  // custom enum scheduler.run_status; values not in reference
+  result_summary                  String?
+  error_text                      String?
+  attempt                         Int
+  worker_phase                    String?
+  worker_phase_attempt            Int?
+  worker_agent_id                 String?
+  worker_boot_generation          String?
+  worker_claimed_at_utc           BigInt?
+  worker_execution_timed_out      Boolean
+  worker_history_agent_id         String?
+  product_endpoint_deadline_at_ms BigInt?
+  presentation_locale             String
+  onboarding_tour_body            String?
+  pending_terminal_result_json    String?
+  worker_approval_wait_json       String?
+  scheduler_job_definitions       scheduler_job_definitions?  @relation(fields: [job_definition_id], references: [job_definition_id])
+  scheduler_jobs                  scheduler_jobs  @relation(fields: [job_id], references: [job_id])
+  runtime_requests                runtime_requests?  @relation(fields: [request_id], references: [request_id])
+  scheduler_doctor_run_plans      scheduler_doctor_run_plans[]
+  @@schema("scheduler")
+  @@map("job_runs")
+}
+
+model scheduler_jobs {
+  job_id                    String                       @id
+  is_heartbeat              Boolean
+  source_path               String?
+  source_hash               String?
+  schedule_kind             String
+  enabled                   Boolean
+  schedule_expr             String
+  timezone                  String
+  retry_on_failure          Boolean
+  max_retries               Int
+  delivery_targets_json     String
+  next_run_at               DateTime?
+  next_run_at_utc           BigInt
+  last_run_at_utc           BigInt?
+  last_success_at_utc       BigInt?
+  last_status               String?
+  consecutive_failures      BigInt
+  updated_at_utc            BigInt
+  created_at                DateTime
+  updated_at                DateTime
+  blocked_reason            String?
+  blocked_dependency        String?
+  blocked_at_utc            BigInt?
+  next_blocked_probe_at_utc BigInt?
+  scheduler_job_definitions scheduler_job_definitions[]
+  scheduler_job_idea_scope  scheduler_job_idea_scope[]
+  scheduler_job_runs        scheduler_job_runs[]
+  @@schema("scheduler")
+  @@map("jobs")
+}
+
+model scheduler_scheduled_resume_registrations {
+  resume_at_utc                      BigInt                       @id
+  schedule_id                        String?
+  dispatch_at_ms                     BigInt?
+  acknowledgement_attempts           Int
+  created_at                         DateTime
+  job_name                           String?
+  shadow                             Boolean
+  registration_attempts              Int
+  acknowledgement_next_attempt_at_ms BigInt
+  environment_id                     String?
+  @@schema("scheduler")
+  @@map("scheduled_resume_registrations")
+}
+
+model scheduler_scheduled_resume_state {
+  singleton                  Boolean                      @id
+  next_resume_at_utc         BigInt?
+  registered_dispatch_at_ms  BigInt?
+  projection_complete        Boolean
+  registration_resume_at_utc BigInt?
+  registered_schedule_id     String?
+  next_resume_job_name       String?
+  @@schema("scheduler")
+  @@map("scheduled_resume_state")
+}
+
+model scheduler_terminal_signals {
+  run_id                      String                       @id
+  signal_type                 String
+  message                     String?
+  producer_request_trace_json String?
+  created_at                  DateTime
+  created_at_utc              BigInt
+  producer_agent_id           String?
+  producer_phase_attempt      Int?
+  producer_boot_generation    String?
+  blocked_reason              String?
+  blocked_dependency          String?
+  @@schema("scheduler")
+  @@map("terminal_signals")
+}
+
+model self_improvement_backfill_day_runs {
+  backfill_day_run_id String                       @id
+  objective_id        String
+  day                 DateTime
+  run_id              String
+  request_id          String
+  replay_hash         String
+  status              String
+  diagnostics         Json
+  started_at          DateTime?
+  finished_at         DateTime?
+  created_at          DateTime
+  updated_at          DateTime
+  @@schema("self_improvement")
+  @@map("backfill_day_runs")
+}
+
+model self_improvement_calculation_records {
+  replay_id         String                       @id
+  card_id           String
+  objective_id      String
+  config_hash       String
+  code_version      String
+  source_handles    Json
+  normalized_inputs Json
+  formulas          Json
+  outputs           Json
+  created_at        DateTime
+  @@schema("self_improvement")
+  @@map("calculation_records")
+}
+
+model self_improvement_calibration_records {
+  calibration_id String                       @id
+  card_id        String
+  objective_id   String
+  change_id      String
+  classification String
+  window_start   DateTime?
+  window_end     DateTime?
+  source_handles Json
+  diagnostics    Json
+  created_at     DateTime
+  @@schema("self_improvement")
+  @@map("calibration_records")
+}
+
+model self_improvement_connector_read_audit {
+  audit_id       BigInt                       @id
+  connector_id   String?
+  device_node_id String?
+  method_key     String
+  purpose        String
+  request_id     String
+  request_origin String
+  sensitivity    String
+  source_handle  String?
+  metadata       Json
+  created_at     DateTime
+  @@schema("self_improvement")
+  @@map("connector_read_audit")
+}
+
+model self_improvement_conversation_follow_up_attempts {
+  occurrence             String                       @id
+  delivery_submission_id String
+  selector_decision      String?
+  selector_message       String?
+  feedback_note          String?
+  selected_at            DateTime?
+  state                  String
+  disposition_reason     String?
+  surfaced_at            DateTime?
+  terminal_at            DateTime?
+  created_at             DateTime
+  updated_at             DateTime
+  source_root_agent_id   String?
+  selector_priority      Int?
+  @@schema("self_improvement")
+  @@map("conversation_follow_up_attempts")
+}
+
+model self_improvement_handoff_dedupe {
+  objective_id String
+  content_hash String
+  run_id       String
+  emitted_at   DateTime
+  @@id([objective_id, content_hash])
+  @@schema("self_improvement")
+  @@map("handoff_dedupe")
+}
+
+model self_improvement_learning_adoption_events {
+  id           BigInt                       @id
+  learning_id  String
+  objective_id String
+  run_id       String
+  outcome      String
+  detail       Json
+  created_at   DateTime
+  @@schema("self_improvement")
+  @@map("learning_adoption_events")
+}
+
+model self_improvement_leases {
+  lease_key    String                       @id
+  owner        String
+  objective_id String?
+  run_id       String?
+  acquired_at  DateTime
+  expires_at   DateTime
+  heartbeat_at DateTime
+  metadata     Json
+  self_improvement_runs self_improvement_runs?  @relation(fields: [run_id], references: [run_id])
+  @@schema("self_improvement")
+  @@map("leases")
+}
+
+model self_improvement_objective_markers {
+  objective_id String
+  marker       String
+  set_at       DateTime
+  @@id([objective_id, marker])
+  @@schema("self_improvement")
+  @@map("objective_markers")
+}
+
+model self_improvement_objective_state {
+  objective_id      String                       @id
+  current_file_hash String?
+  projection_hash   String?
+  status            String
+  last_run_utc      DateTime?
+  state_json        Json
+  updated_at        DateTime
+  @@schema("self_improvement")
+  @@map("objective_state")
+}
+
+model self_improvement_relationship_briefs {
+  brief_id          String                       @id
+  title             String
+  body_html         String
+  anchored_idea_ids Json
+  request_id        String
+  created_at        DateTime
+  last_opened_at    DateTime?
+  @@schema("self_improvement")
+  @@map("relationship_briefs")
+}
+
+model self_improvement_runs {
+  run_id                     String                       @id
+  objective_id               String
+  state                      String
+  request_id                 String
+  request_origin             String
+  phase                      String?
+  subphase                   String?
+  diagnostics                Json
+  queued_at                  DateTime
+  started_at                 DateTime?
+  finished_at                DateTime?
+  created_at                 DateTime
+  updated_at                 DateTime
+  run_clock                  DateTime
+  available_at               DateTime
+  recovery_phase_version     Int?
+  recovery_admitted_at       DateTime?
+  recovery_admission_boot_id String?
+  self_improvement_leases    self_improvement_leases[]
+  @@schema("self_improvement")
+  @@map("runs")
+}
+
+model shell_user_state {
+  source            String
+  item_key          String
+  is_favorite       Boolean
+  accessed_at_ms    BigInt?
+  frequency_score   Float?
+  favorite_order    Float?
+  display_name      String?
+  icon              String?
+  updated_at_ms     BigInt
+  last_opened_at_ms BigInt?
+  @@id([source, item_key])
+  @@schema("shell")
+  @@map("user_state")
+}
+
+model spaces_action_arguments {
+  action_argument_id BigInt                       @id
+  invocation_id      String
+  argument_name      String
+  scalar_value       String?
+  text_content       String?
+  spaces_action_invocations spaces_action_invocations  @relation(fields: [invocation_id], references: [invocation_id])
+  @@schema("spaces")
+  @@map("action_arguments")
+}
+
+model spaces_action_invocations {
+  global_seq               BigInt
+  invocation_id            String                       @id
+  space_slug               String
+  space_display_name       String?
+  action                   String
+  transport                String
+  request_id               String?
+  status                   String
+  invoked_at_text          String?
+  invoked_at_unix_ms       BigInt
+  invoked_at               DateTime
+  settled_at_text          String?
+  settled_at_unix_ms       BigInt?
+  duration_ms              BigInt?
+  args_preview             String?
+  result_preview           String?
+  error                    String?
+  stream_protocol_messages BigInt?
+  stream_data_messages     BigInt?
+  finished_at              DateTime?
+  source_kind              String?
+  source_ref               String?
+  trigger_ref              String?
+  runtime_requests         runtime_requests?  @relation(fields: [request_id], references: [request_id])
+  spaces_action_arguments  spaces_action_arguments[]
+  spaces_action_results    spaces_action_results[]
+  @@schema("spaces")
+  @@map("action_invocations")
+}
+
+model spaces_action_results {
+  invocation_id String                       @id
+  result_text   String?
+  error_text    String?
+  spaces_action_invocations spaces_action_invocations  @relation(fields: [invocation_id], references: [invocation_id])
+  @@schema("spaces")
+  @@map("action_results")
+}
+
+model spaces_backfill_markers {
+  marker       String                       @id
+  completed_at DateTime
+  @@schema("spaces")
+  @@map("backfill_markers")
+}
+
+model spaces_file_artifact_identities {
+  slug        String                       @id
+  artifact_id String                       @db.Uuid
+  created_at  DateTime
+  @@schema("spaces")
+  @@map("file_artifact_identities")
+}
+
+model spaces_proposals {
+  proposal_id       String                       @id
+  root_session_id   String
+  space_slug        String
+  proposed_name     String
+  params_json       String
+  confirmed_at_text String?
+  confirmed_at      DateTime?
+  created_at_text   String
+  created_at        DateTime
+  @@schema("spaces")
+  @@map("proposals")
+}
+
+model spaces_shares {
+  space_slug                String                       @id
+  share_type                String
+  shortcode                 String
+  is_active                 Boolean
+  share_id                  String?
+  cloudflare_deploy_status  String?
+  cloudflare_public_url     String?
+  cloudflare_actions_url    String?
+  created_at                DateTime
+  updated_at                DateTime
+  cloudflare_storage_mode   String
+  published_manifest_sha256 String?
+  spaces_spaces             spaces_spaces  @relation(fields: [space_slug], references: [space_slug])
+  @@schema("spaces")
+  @@map("shares")
+}
+
+model spaces_spaces {
+  space_slug                          String                       @id
+  display_name                        String
+  space_root_path                     String?
+  db_path                             String?
+  force_order                         BigInt?
+  session_id                          String?
+  construction_status                 String?
+  construction_updated_at_text        String?
+  created_at_text                     String?
+  updated_at_text                     String?
+  created_at                          DateTime
+  updated_at                          DateTime
+  archived_at                         DateTime?
+  current_build_id                    String?
+  created_from_proposal_id            String?
+  space_id                            String                       @db.Uuid
+  source                              String
+  shortcode                           String?
+  source_url                          String?
+  has_server_actions                  Boolean
+  cloudflare_share_manifest_sha256    String?
+  content_share_allowed               Boolean?
+  content_share_review_sha256         String?
+  declared_capabilities_json          Json
+  capability_manifest_revision        BigInt
+  builder_provenance_pending_build_id String?
+  builder_provenance_lost_build_id    String?
+  builder_provenance_build_id         String?
+  builder_provenance_evidence_jsonl   String?
+  share_disclosure_review             Json?
+  is_promoted                         Boolean
+  artifact_audit_review               Json?
+  spaces_shares                       spaces_shares[]
+  @@schema("spaces")
+  @@map("spaces")
+}
+
+model spaces_user_state {
+  space_slug        String                       @id
+  is_favorite       Boolean
+  accessed_at_ms    BigInt?
+  frequency_score   Float?
+  favorite_order    Float?
+  last_accessed_at  DateTime?
+  pinned_at         DateTime?
+  last_opened_at_ms BigInt?
+  @@schema("spaces")
+  @@map("user_state")
+}
