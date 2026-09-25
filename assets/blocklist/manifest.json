@@ -1,0 +1,36 @@
+{
+  "bucket": "genai_web_search",
+  "prefix": "flat",
+  "fetched_at": "2026-08-17T22:58:06.599986+00:00",
+  "artifacts": {
+    "mase_all_domains.fst": {
+      "bytes": 13642979,
+      "sha256": "55c4add8c09affd7df9a9db2a5b61c933fb641a8a091cbe4d2aa18a2abb871ed"
+    },
+    "mase_reduced_domains.fst": {
+      "bytes": 13310390,
+      "sha256": "475840d2bd6187116bafef803d202ae80e3f4c6f8f0a2ce139746d0f1ca7fc6d"
+    },
+    "mase_all_urls_fingerprints.bin": {
+      "bytes": 59979504,
+      "sha256": "d88ee0f9a27e7e5eb83587c35bbeaf016a54163d7ca804b1866b26b0b780d712",
+      "format_version": 1,
+      "key_schema_version": 1,
+      "entry_count": 7497435,
+      "source_fst": {
+        "name": "mase_all_urls_normalized.fst",
+        "published_at": "2026-08-17T22:16:00+00:00",
+        "bytes": 302600959,
+        "sha256": "1e26ebfc4e8f74f0ebcc24a69400a2aef8effd8abeb25e46983b5f58e30a5b1f"
+      }
+    },
+    "mase_contract_domains.fst": {
+      "bytes": 3318,
+      "sha256": "f14f98644ab32306f2bc9ede568bc0d24f53508aec069087dd2265b20bc81d82"
+    },
+    "mase_blocklist_regex.json": {
+      "bytes": 74,
+      "sha256": "b2f622c936cef169b62c6419eab488a16dd6bd88628bf2ff12abb55855cea60b"
+    }
+  }
+}

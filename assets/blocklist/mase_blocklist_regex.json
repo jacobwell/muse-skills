@@ -1,0 +1,5 @@
+{
+  "blocked_regex_patterns": [
+    "([a-z]*\\.celebri(\\.[a-z]*)+)"
+  ]
+}
