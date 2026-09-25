@@ -49,7 +49,7 @@ playbooks and gives a quick TL;DR for each one.
 | [`skills/meta-threads/SKILL.md`](skills/meta-threads/SKILL.md) | Read and manage Threads profiles, feeds, posts, and insights. |
 | [`skills/muse-early-access/SKILL.md`](skills/muse-early-access/SKILL.md) | Manage Muse early-access requests and admission updates. |
 | [`skills/feedback/SKILL.md`](skills/feedback/SKILL.md) | Offer and manage product feedback or feature requests. |
-| [`skills/mail/SKILL.md`](skills/mail/SKILL.md) | Route and manage Muse Mail and forwarded mail. |
+| [`skills/muse-mail/SKILL.md`](skills/muse-mail/SKILL.md) | Route and manage Muse Mail and forwarded mail. |
 | [`skills/muse_db/SKILL.md`](skills/muse_db/SKILL.md) | Inspect database-backed Muse records for diagnosis and tracing. |
 | [`skills/notion/SKILL.md`](skills/notion/SKILL.md) | Search, read, create, and update Notion pages. |
 | [`skills/opentable/SKILL.md`](skills/opentable/SKILL.md) | Find restaurants and manage OpenTable reservations. |
