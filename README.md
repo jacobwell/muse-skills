@@ -47,7 +47,7 @@ playbooks and gives a quick TL;DR for each one.
 | [`skills/media-library/SKILL.md`](skills/media-library/SKILL.md) | Search and inspect connected photo libraries. |
 | [`skills/messenger/SKILL.md`](skills/messenger/SKILL.md) | Search conversations and contacts and manage Messenger messages. |
 | [`skills/meta-threads/SKILL.md`](skills/meta-threads/SKILL.md) | Read and manage Threads profiles, feeds, posts, and insights. |
-| [`skills/early-access/SKILL.md`](skills/early-access/SKILL.md) | Manage Muse early-access requests and admission updates. |
+| [`skills/muse-early-access/SKILL.md`](skills/muse-early-access/SKILL.md) | Manage Muse early-access requests and admission updates. |
 | [`skills/feedback/SKILL.md`](skills/feedback/SKILL.md) | Offer and manage product feedback or feature requests. |
 | [`skills/mail/SKILL.md`](skills/mail/SKILL.md) | Route and manage Muse Mail and forwarded mail. |
 | [`skills/muse_db/SKILL.md`](skills/muse_db/SKILL.md) | Inspect database-backed Muse records for diagnosis and tracing. |
